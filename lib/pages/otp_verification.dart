@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:forsaty/pages/reset_password.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String email;
@@ -42,6 +43,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         ),
       );
     } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ResetPasswordScreen(),
+        ),
+      );
       // TODO: Implement OTP verification logic
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -222,6 +229,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         ),
         onChanged: (value) {
           if (value.isNotEmpty && index < 4) {
+            
             // Move to next field
             _focusNodes[index + 1].requestFocus();
           } else if (value.isEmpty && index > 0) {
