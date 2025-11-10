@@ -386,7 +386,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final isTablet = screenWidth > 600;
 
     return Container(
-      width: double.infinity,
+      width: isTablet ? 300 : screenWidth * 0.85,
       height: isTablet ? 55 : screenHeight * 0.06, // Reduced height
       decoration: BoxDecoration(
         gradient: const LinearGradient(

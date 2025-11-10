@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forsaty/pages/forgot_pass.dart';
 import 'package:forsaty/pages/signup.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _LoginState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final isTablet = screenWidth > 600;
+    final _ = screenWidth > 600;
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       body: Stack(
@@ -145,6 +146,13 @@ class _LoginState extends State<LoginScreen> {
                             child: TextButton(
                               onPressed: () {
                                 // Navigate to forgot password screen
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ForgotPasswordScreen(),
+                                  ),
+                                );
                               },
                               child: const Text(
                                 'Forgot Password?',
@@ -169,34 +177,34 @@ class _LoginState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 30),
 
-                          // // Divider with text
-                          // Row(
-                          //   children: [
-                          //     Expanded(
-                          //       child: Container(
-                          //         height: 1,
-                          //         color: Colors.grey[300],
-                          //       ),
-                          //     ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Text(
-                              '-Or login with-',
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 2, 0, 0),
-                                fontSize: 16,
+                          // Divider with text
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: Colors.grey[300],
+                                ),
                               ),
-                            ),
-                          ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                child: Text(
+                                  '-Or login with-',
+                                  style: TextStyle(
+                                    color: Color.fromARGB(255, 2, 0, 0),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
 
-                          //     Expanded(
-                          //       child: Container(
-                          //         height: 1,
-                          //         color: Colors.grey[300],
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: Colors.grey[300],
+                                ),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 24),
 
                           // Social login buttons
