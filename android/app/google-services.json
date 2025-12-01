@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "262974148294",
+    "project_id": "forsaty-8dc9c",
+    "storage_bucket": "forsaty-8dc9c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:262974148294:android:ad31aea888f8cc466911c7",
+        "android_client_info": {
+          "package_name": "com.forsaty.forsaty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl2LZhmFFHlPXezS0NaXeINWQOtj1AWr0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
