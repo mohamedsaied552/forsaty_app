@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:forsaty/pages/login.dart';
 
+enum UserRole { Worker, Employer }
+
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -15,6 +17,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  UserRole selectedRole = UserRole.Worker;
 
   @override
   void dispose() {
@@ -105,10 +108,13 @@ class _SignupScreenState extends State<SignupScreen> {
                         ],
                       ),
 
-                      SizedBox(
-                        height: screenHeight * 0.025,
-                      ), // Reduced from 0.04
-                      // Name field
+                      SizedBox(height: screenHeight * 0.025),
+                      _buildRoleSelection(
+                        screenWidth: screenWidth,
+                        screenHeight: screenHeight,
+                        isTablet: isTablet,
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
                       _buildTextField(
                         controller: _nameController,
                         hintText: 'Name',
@@ -324,7 +330,7 @@ class _SignupScreenState extends State<SignupScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -400,7 +406,7 @@ class _SignupScreenState extends State<SignupScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0A3D62).withOpacity(0.25),
+            color: const Color(0xFF0A3D62).withValues(alpha: 0.25),
             blurRadius: 12,
             offset: const Offset(0, 6),
             spreadRadius: 1,
@@ -442,7 +448,7 @@ class _SignupScreenState extends State<SignupScreen> {
       onTap: onPressed,
       borderRadius: BorderRadius.circular(25),
       child: Container(
-        width: isTablet ? 60 : screenWidth * 0.13, // Reduced size
+        width: isTablet ? 60 : screenWidth * 0.13,
         height: isTablet ? 60 : screenWidth * 0.13,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -450,7 +456,7 @@ class _SignupScreenState extends State<SignupScreen> {
           border: Border.all(color: Colors.grey[300]!, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
+              color: Colors.grey.withValues(alpha: 0.15),
               blurRadius: 10,
               offset: const Offset(0, 4),
               spreadRadius: 1,
@@ -460,7 +466,109 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Icon(
           icon,
           color: color,
-          size: isTablet ? 30 : (screenWidth * 0.06).clamp(20, 28), // Reduced
+          size: isTablet ? 30 : (screenWidth * 0.06).clamp(20, 28),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleSelection({
+    required double screenWidth,
+    required double screenHeight,
+    required bool isTablet,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: _buildRoleOption(
+            role: UserRole.Worker,
+            label: 'Worker',
+            arabicLabel: 'عامل',
+            icon: Icons.construction,
+            screenWidth: screenWidth,
+            screenHeight: screenHeight,
+            isTablet: isTablet,
+          ),
+        ),
+        SizedBox(width: screenWidth * 0.04),
+        Expanded(
+          child: _buildRoleOption(
+            role: UserRole.Employer,
+            label: 'Employer',
+            arabicLabel: 'صاحب شغل',
+            icon: Icons.business_center,
+            screenWidth: screenWidth,
+            screenHeight: screenHeight,
+            isTablet: isTablet,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoleOption({
+    required UserRole role,
+    required String label,
+    required String arabicLabel,
+    required IconData icon,
+    required double screenWidth,
+    required double screenHeight,
+    required bool isTablet,
+  }) {
+    final isSelected = selectedRole == role;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedRole = role;
+        });
+      },
+      child: Container(
+        height: isTablet ? 90 : screenHeight * 0.11,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFF0F8FF) : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF0A3D62) : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF0A3D62).withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                    spreadRadius: 1,
+                  ),
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFF0A3D62) : Colors.grey[600],
+              size: isTablet ? 28 : (screenWidth * 0.06).clamp(22, 28),
+            ),
+            SizedBox(height: screenHeight * 0.008),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isTablet ? 14 : (screenWidth * 0.035).clamp(12, 14),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? const Color(0xFF0A3D62) : Colors.grey[700],
+              ),
+            ),
+            Text(
+              arabicLabel,
+              style: TextStyle(
+                fontSize: isTablet ? 12 : (screenWidth * 0.03).clamp(10, 12),
+                color: isSelected ? const Color(0xFF0A3D62) : Colors.grey[600],
+              ),
+            ),
+          ],
         ),
       ),
     );
