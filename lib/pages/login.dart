@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forsaty/pages/forgot_pass.dart';
 import 'package:forsaty/pages/signup.dart';
+import '../../logic/user/user_bloc.dart';
+import '../../logic/user/user_event.dart';
+import '../../logic/user/user_state.dart';
+import '../../repositories/user_repository.dart';
+import '../../services/user_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,262 +32,298 @@ class _LoginState extends State<LoginScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final _ = screenWidth > 600;
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      body: Stack(
-        children: [
-          // Curved header shapes
-          SizedBox(
-            width: double.infinity,
-            height: screenHeight * 0.35,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  top: 0,
-                  left: MediaQuery.of(context).size.width * 0.0,
-                  child: Image.asset(
-                    'assets/Subtract.png',
-                    width: MediaQuery.of(context).size.width,
-                    fit: BoxFit.fill,
+    return BlocProvider(
+      create: (_) => UserBloc(UserRepository(UserService())),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFFFFFF),
+        body: Stack(
+          children: [
+            // Curved header shapes
+            SizedBox(
+              width: double.infinity,
+              height: screenHeight * 0.35,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    top: 0,
+                    left: MediaQuery.of(context).size.width * 0.0,
+                    child: Image.asset(
+                      'assets/Subtract.png',
+                      width: MediaQuery.of(context).size.width,
+                      fit: BoxFit.fill,
+                    ),
                   ),
-                ),
 
-                // Logo
-              ],
+                  // Logo
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            height: screenHeight * 0.35,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Positioned(
-                      top: MediaQuery.of(context).size.height * 0.8,
-                      left: MediaQuery.of(context).size.width * 1,
-                      child: Text(
-                        'Log In',
-                        style: TextStyle(
-                          fontSize: (MediaQuery.of(context).size.width * 0.09),
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white.withValues(alpha: 0.95),
+            SizedBox(
+              height: screenHeight * 0.35,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Positioned(
+                        top: MediaQuery.of(context).size.height * 0.8,
+                        left: MediaQuery.of(context).size.width * 1,
+                        child: Text(
+                          'Log In',
+                          style: TextStyle(
+                            fontSize:
+                                (MediaQuery.of(context).size.width * 0.09),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white.withValues(alpha: 0.95),
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      top: MediaQuery.of(context).size.height * 0.15,
-                      left: MediaQuery.of(context).size.width * 0.27,
-                      child: Image.asset(
-                        'assets/Group 2.png',
-                        fit: BoxFit.cover,
+                      Positioned(
+                        top: MediaQuery.of(context).size.height * 0.15,
+                        left: MediaQuery.of(context).size.width * 0.27,
+                        child: Image.asset(
+                          'assets/Group 2.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.3,
-            left: MediaQuery.of(context).size.width * 0.35,
-            child: Image.asset(
-              'assets/logo 2.png',
-              width: MediaQuery.of(context).size.width * 0.3,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(50),
+                    ],
                   ),
-                  child: const Icon(Icons.image, size: 40, color: Colors.grey),
-                );
-              },
+                ],
+              ),
             ),
-          ),
-          // Main content
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
 
-              children: [
-                Positioned(
-                  top: MediaQuery.of(context).size.height * 0.45,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: SafeArea(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20),
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.3,
+              left: MediaQuery.of(context).size.width * 0.35,
+              child: Image.asset(
+                'assets/logo 2.png',
+                width: MediaQuery.of(context).size.width * 0.3,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Icon(
+                      Icons.image,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
+            ),
+            // Main content
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
 
-                          // Username field
-                          _buildTextField(
-                            controller: _usernameController,
-                            hintText: 'Username',
-                            icon: Icons.person_outline,
-                          ),
+                children: [
+                  Positioned(
+                    top: MediaQuery.of(context).size.height * 0.45,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: SafeArea(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 20),
 
-                          const SizedBox(height: 16),
-
-                          // Password field
-                          _buildTextField(
-                            controller: _passwordController,
-                            hintText: 'Password',
-                            icon: Icons.lock_outline,
-                            isPassword: true,
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // Forgot Password link
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
-                                // Navigate to forgot password screen
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ForgotPasswordScreen(),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Forgot Password?',
-                                style: TextStyle(
-                                  color: Color(0xFF515151),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                            // Username field
+                            _buildTextField(
+                              controller: _usernameController,
+                              hintText: 'Username',
+                              icon: Icons.person_outline,
                             ),
-                          ),
 
-                          const SizedBox(height: 20),
+                            const SizedBox(height: 16),
 
-                          // LOG IN button
-                          _buildGradientButton(
-                            context: context,
-                            text: 'LOG IN',
-                            onPressed: () {
-                              // Handle login
-                            },
-                          ),
-                          const SizedBox(height: 30),
+                            // Password field
+                            _buildTextField(
+                              controller: _passwordController,
+                              hintText: 'Password',
+                              icon: Icons.lock_outline,
+                              isPassword: true,
+                            ),
 
-                          // Divider with text
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  height: 1,
-                                  color: Colors.grey[300],
-                                ),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                child: Text(
-                                  '-Or login with-',
-                                  style: TextStyle(
-                                    color: Color.fromARGB(255, 2, 0, 0),
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
+                            const SizedBox(height: 12),
 
-                              Expanded(
-                                child: Container(
-                                  height: 1,
-                                  color: Colors.grey[300],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Social login buttons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildSocialButton(
-                                icon: Icons.facebook,
-                                color: const Color(0xFF1877F2),
+                            // Forgot Password link
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
                                 onPressed: () {
-                                  // Facebook login
-                                },
-                              ),
-                              const SizedBox(width: 20),
-                              _buildSocialButton(
-                                icon: Icons.g_mobiledata,
-                                color: const Color(0xFFDB4437),
-                                onPressed: () {
-                                  // Google login
-                                },
-                              ),
-                              const SizedBox(width: 20),
-                              _buildSocialButton(
-                                icon: Icons.apple,
-                                color: Colors.black,
-                                onPressed: () {
-                                  // Apple login
-                                },
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 30),
-
-                          // Sign up link
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                "Already have an account? ",
-                                style: TextStyle(
-                                  color: Color.fromARGB(98, 0, 0, 0),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
+                                  // Navigate to forgot password screen
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          const SignupScreen(),
+                                          const ForgotPasswordScreen(),
                                     ),
                                   );
                                 },
                                 child: const Text(
-                                  'Create new',
+                                  'Forgot Password?',
                                   style: TextStyle(
-                                    color: Color(0xFF326789),
+                                    color: Color(0xFF515151),
                                     fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
 
-                          const SizedBox(height: 30),
-                        ],
+                            const SizedBox(height: 20),
+
+                            // LOG IN button
+                            _buildGradientButton(
+                              context: context,
+                              text: 'LOG IN',
+                              onPressed: () {
+                                final uid = _usernameController.text.trim();
+                                if (uid.isNotEmpty) {
+                                  context.read<UserBloc>().add(LoadUser(uid));
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 20),
+
+                            BlocBuilder<UserBloc, UserState>(
+                              builder: (context, state) {
+                                if (state is UserLoading) {
+                                  return const CircularProgressIndicator();
+                                } else if (state is UserLoaded) {
+                                  return Text(
+                                    "Welcome, ${state.user.name}",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                } else if (state is UserError) {
+                                  return Text(
+                                    "Error: ${state.message}",
+                                    style: const TextStyle(color: Colors.red),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                            const SizedBox(height: 30),
+
+                            // Divider with text
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 1,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                  ),
+                                  child: Text(
+                                    '-Or login with-',
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 2, 0, 0),
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Container(
+                                    height: 1,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Social login buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildSocialButton(
+                                  icon: Icons.facebook,
+                                  color: const Color(0xFF1877F2),
+                                  onPressed: () {
+                                    // Facebook login
+                                  },
+                                ),
+                                const SizedBox(width: 20),
+                                _buildSocialButton(
+                                  icon: Icons.g_mobiledata,
+                                  color: const Color(0xFFDB4437),
+                                  onPressed: () {
+                                    // Google login
+                                  },
+                                ),
+                                const SizedBox(width: 20),
+                                _buildSocialButton(
+                                  icon: Icons.apple,
+                                  color: Colors.black,
+                                  onPressed: () {
+                                    // Apple login
+                                  },
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 30),
+
+                            // Sign up link
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "Already have an account? ",
+                                  style: TextStyle(
+                                    color: Color.fromARGB(98, 0, 0, 0),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SignupScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Create new',
+                                    style: TextStyle(
+                                      color: Color(0xFF326789),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 30),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
