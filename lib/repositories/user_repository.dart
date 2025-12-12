@@ -1,13 +1,13 @@
 import '../services/user_service.dart';
-import '../models/user.dart';
+import '../models/user_model.dart';
 
 class UserRepository {
   final UserService _userService;
 
   UserRepository(this._userService);
 
-  Future<User?> getUser(String uid) => _userService.getUser(uid);
-  Future<void> createUser(User user) => _userService.createUserProfile(user);
+  Future<UserModel?> getUser(String uid) => _userService.getUser(uid);
+  Future<void> createUser(UserModel user) => _userService.createUserProfile(user);
   Future<void> updateUserInfo({
     required String uid,
     String? name,
@@ -21,5 +21,5 @@ class UserRepository {
   );
   Future<void> updateWorkerSkills(String uid, List<String> skills) =>
       _userService.updateWorkerSkills(uid, skills);
-  Future<List<User>> getAllUsers() => _userService.getAllUsers();
+  Future<List<UserModel>> getAllUsers() => _userService.getAllUsers();
 }

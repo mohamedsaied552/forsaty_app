@@ -1,4 +1,4 @@
-class User {
+class UserModel {
   final String id;
   final String email;
   final String role; // 'Worker', 'Employer', or 'Admin'
@@ -7,7 +7,7 @@ class User {
   final String bio;
   final List<String> skills;
 
-  User({
+  UserModel({
     required this.id,
     required this.email,
     required this.role,
@@ -29,8 +29,8 @@ class User {
     };
   }
 
-  factory User.fromMap(Map<String, dynamic> map, String docId) {
-    return User(
+  factory UserModel.fromMap(Map<String, dynamic> map, String docId) {
+    return UserModel(
       id: map['uid'] ?? '',
       email: map['email'] ?? '',
       role: map['role'] ?? 'Worker',
