@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../models/user.dart';
+import '../../models/user_model.dart';
 
 abstract class UserState extends Equatable {
   @override
@@ -13,7 +13,7 @@ class UserLoading extends UserState {}
 class UserCreated extends UserState {}      
 
 class UserLoaded extends UserState {
-  final User user;
+  final UserModel user;
   UserLoaded(this.user);
 
   @override
