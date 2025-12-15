@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:forsaty/pages/login.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+// import '../logic/user/user_bloc.dart'; 
+// import '../logic/user/user_event.dart'; 
+// import '../logic/user/user_state.dart'; 
+import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 
 enum UserRole { Worker, Employer }
 
@@ -18,6 +24,8 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   UserRole selectedRole = UserRole.Worker;
+  final _formKey = GlobalKey<FormState>(); 
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -26,6 +34,58 @@ class _SignupScreenState extends State<SignupScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+    Future<void> _signup() async { // Added signup function for server-side validation
+    setState(() {
+      _errorMessage = null; // Reset error message
+    });
+
+    if (!_formKey.currentState!.validate()) return; // Validate fields before submission
+
+    try {
+      // Create user with Firebase Authentication
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // Store additional user info in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(credential.user!.uid)
+          .set({
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'role': selectedRole == UserRole.Worker ? 'Worker' : 'Employer',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Navigate to login screen after successful signup
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase Auth specific errors
+      if (e.code == 'email-already-in-use') {
+        setState(() {
+          _errorMessage = 'This email is already registered.'; // Error message
+        });
+      } else if (e.code == 'weak-password') {
+        setState(() {
+          _errorMessage = 'Password is too weak.'; // Error message
+        });
+      } else {
+        setState(() {
+          _errorMessage = e.message; // Other errors
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString(); // Catch-all error
+      });
+    }
   }
 
   @override
@@ -119,6 +179,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         controller: _nameController,
                         hintText: 'Name',
                         icon: Icons.person_outline,
+                        validator: (value) {
+                            if (value == null || value.trim().isEmpty) return 'Name is required.'; // Validation
+                            return null;
+                          },
                       ),
 
                       SizedBox(
@@ -130,6 +194,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         hintText: 'Email',
                         icon: Icons.mail_outline,
                         keyboardType: TextInputType.emailAddress,
+                         validator: (value) {
+                            if (value == null || value.trim().isEmpty) return 'Email is required.';
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}').hasMatch(value)) return 'Enter a valid email.';
+                            return null;
+                          },
                       ),
 
                       SizedBox(
@@ -147,6 +216,11 @@ class _SignupScreenState extends State<SignupScreen> {
                             _obscurePassword = !_obscurePassword;
                           });
                         },
+                        validator: (value) {
+                            if (value == null || value.trim().isEmpty) return 'Password is required.';
+                            if (value.length < 6) return 'Password must be at least 6 characters.';
+                            return null;
+                          },
                       ),
 
                       SizedBox(
@@ -164,7 +238,21 @@ class _SignupScreenState extends State<SignupScreen> {
                             _obscureConfirmPassword = !_obscureConfirmPassword;
                           });
                         },
+                        validator: (value) {
+                            if (value == null || value.trim().isEmpty) return 'Confirm password is required.';
+                            if (value != _passwordController.text) return 'Passwords do not match.'; // Confirm password validation
+                            return null;
+                          },
                       ),
+                      if (_errorMessage != null) // Display error messages
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
 
                       SizedBox(
                         height: screenHeight * 0.025,
@@ -173,15 +261,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       _buildGradientButton(
                         context: context,
                         text: 'SIGN UP',
-                        onPressed: () {
-                          // Handle signup
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
-                          );
-                        },
+                        onPressed: _signup, 
                       ),
 
                       SizedBox(
@@ -322,6 +402,7 @@ class _SignupScreenState extends State<SignupScreen> {
     bool obscureText = false,
     VoidCallback? onToggleVisibility,
     TextInputType? keyboardType,
+    String? Function(String?)? validator,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -342,7 +423,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ],
       ),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
@@ -384,6 +465,7 @@ class _SignupScreenState extends State<SignupScreen> {
             vertical: isTablet ? 16 : screenHeight * 0.015, // Reduced
           ),
         ),
+        validator: validator,
       ),
     );
   }
