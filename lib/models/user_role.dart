@@ -1,0 +1,2 @@
+enum UserRole { Worker, Employer }
+

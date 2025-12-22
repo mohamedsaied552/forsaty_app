@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import 'login.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final String? actionCode; // For password reset from email link
+  
+  const ResetPasswordScreen({super.key, this.actionCode});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -10,8 +14,12 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final AuthService _authService = AuthService();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -20,41 +28,61 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     super.dispose();
   }
 
-  void _updatePassword() {
-    if (_passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+  Future<void> _updatePassword() async {
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+
+    if (!_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
-          backgroundColor: Colors.redAccent,
-        ),
+    String? error;
+    
+    if (widget.actionCode != null) {
+      // Password reset from email link
+      error = await _authService.confirmPasswordReset(
+        code: widget.actionCode!,
+        newPassword: _passwordController.text.trim(),
       );
-      return;
+    } else {
+      // Update password for logged-in user
+      error = await _authService.updatePassword(_passwordController.text.trim());
     }
 
-    // TODO: Implement password update logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Password updated successfully'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (error != null) {
+      setState(() {
+        _errorMessage = error;
+      });
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Navigate to login screen
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     final isTablet = screenWidth > 600;
 
     return Scaffold(
@@ -102,8 +130,40 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                 const SizedBox(height: 30),
 
+                // Error message display
+                if (_errorMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red[300]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline,
+                            color: Colors.red[700], size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                 // Password field
-                _buildPasswordField(
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _buildPasswordField(
                   label: 'Password',
                   controller: _passwordController,
                   hintText: 'Enter new password',
@@ -139,10 +199,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 // Update Password button
                 Center(
                   child: _buildGradientButton(
-                    text: 'Update Password',
-                    onPressed: _updatePassword,
+                    text: _isLoading ? 'UPDATING...' : 'Update Password',
+                    onPressed: _isLoading ? null : _updatePassword,
                     screenWidth: screenWidth,
                     isTablet: isTablet,
+                  ),
+                ),
+                    ],
                   ),
                 ),
               ],
@@ -186,9 +249,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             color: const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: TextField(
+          child: TextFormField(
             controller: controller,
             obscureText: obscureText,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Password is required.';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters.';
+              }
+              if (label == 'Confirm Password' &&
+                  value != _passwordController.text) {
+                return 'Passwords do not match.';
+              }
+              return null;
+            },
             style: TextStyle(
               fontSize: isTablet
                   ? 16
@@ -233,7 +309,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildGradientButton({
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required double screenWidth,
     required bool isTablet,
   }) {
@@ -262,15 +338,24 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(12),
           child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
+            child: _isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    text,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
           ),
         ),
       ),

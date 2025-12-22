@@ -20,8 +20,16 @@ class AuthExceptionHandler {
           return 'Incorrect password. Please try again.';
         case 'invalid-credential':
           return 'Invalid credentials. Please check your info.';
+        case 'too-many-requests':
+          return 'Too many requests. Please try again later.';
+        case 'network-request-failed':
+          return 'Network error. Please check your internet connection.';
+        case 'user-token-expired':
+          return 'Your session has expired. Please sign in again.';
+        case 'requires-recent-login':
+          return 'This operation requires recent authentication. Please sign in again.';
         default:
-          return 'An undefined error occurred. (${e.code})';
+          return 'An error occurred: ${e.message ?? e.code}';
       }
     } else {
       return 'An error occurred: ${e.toString()}';

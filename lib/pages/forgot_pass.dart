@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:forsaty/pages/otp_verification.dart';
+import '../services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -10,11 +10,58 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
+  String? _errorMessage;
+  bool _emailSent = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _resetPassword() async {
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+
+    if (!_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final error = await _authService.sendPasswordResetEmail(
+      _emailController.text.trim(),
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (error != null) {
+      setState(() {
+        _errorMessage = error;
+        _emailSent = false;
+      });
+    } else {
+      setState(() {
+        _emailSent = true;
+        _errorMessage = null;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password reset email sent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -57,7 +104,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             height: isTablet ? 294 : screenWidth * 0.68,
                             decoration: BoxDecoration(
                               color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                12,
+                              ), // ✅ correct
                             ),
                             child: Icon(
                               Icons.lock_reset,
@@ -93,7 +142,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       horizontal: isTablet ? 0 : screenWidth * 0.05,
                     ),
                     child: Text(
-                      'Please enter your Email to reset the password',
+                      _emailSent
+                          ? 'Password reset email has been sent to your email address. Please check your inbox.'
+                          : 'Please enter your Email to reset the password',
                       style: TextStyle(
                         fontSize: isTablet
                             ? 14
@@ -108,51 +159,93 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   SizedBox(height: screenHeight * 0.035),
 
                   // Email input field
-                  _buildEmailField(
-                    controller: _emailController,
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                    isTablet: isTablet,
-                  ),
-
-                  SizedBox(height: screenHeight * 0.025),
-
-                  // Reset Password button
-                  _buildGradientButton(
-                    context: context,
-                    text: 'Reset Password',
-                    onPressed: () {
-                      // Handle password reset
-                      if (_emailController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please enter your email address'),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-                      } else {
-                        // TODO: Implement password reset logic
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Password reset link sent to your email',
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => OtpVerificationScreen(
-                            email: _emailController.text,
-                          ),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        _buildEmailField(
+                          controller: _emailController,
+                          screenWidth: screenWidth,
+                          screenHeight: screenHeight,
+                          isTablet: isTablet,
+                          enabled: !_emailSent,
                         ),
-                      );
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                    isTablet: isTablet,
+
+                        SizedBox(height: screenHeight * 0.025),
+
+                        // Error message display
+                        if (_errorMessage != null)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.red[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline,
+                                    color: Colors.red[700], size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: TextStyle(
+                                      color: Colors.red[700],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        // Success message display
+                        if (_emailSent)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.green[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.green[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.check_circle_outline,
+                                    color: Colors.green[700], size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Password reset email sent successfully!',
+                                    style: TextStyle(
+                                      color: Colors.green[700],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        // Reset Password button
+                        _buildGradientButton(
+                          context: context,
+                          text: _isLoading
+                              ? 'SENDING...'
+                              : _emailSent
+                                  ? 'RESEND EMAIL'
+                                  : 'Reset Password',
+                          onPressed: _emailSent || _isLoading
+                              ? (_emailSent ? _resetPassword : null)
+                              : _resetPassword,
+                          screenWidth: screenWidth,
+                          screenHeight: screenHeight,
+                          isTablet: isTablet,
+                        ),
+                      ],
+                    ),
                   ),
 
                   SizedBox(height: screenHeight * 0.03),
@@ -203,6 +296,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     required double screenWidth,
     required double screenHeight,
     required bool isTablet,
+    bool enabled = true,
   }) {
     return Container(
       width: screenWidth * 0.85,
@@ -218,9 +312,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ],
       ),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         keyboardType: TextInputType.emailAddress,
+        enabled: enabled,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Email is required.';
+          }
+          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}').hasMatch(value)) {
+            return 'Enter a valid email.';
+          }
+          return null;
+        },
         style: TextStyle(
           fontSize: isTablet ? 16 : (screenWidth * 0.038).clamp(13, 16),
         ),
@@ -253,7 +357,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget _buildGradientButton({
     required BuildContext context,
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required double screenWidth,
     required double screenHeight,
     required bool isTablet,
@@ -263,38 +367,45 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       height: isTablet ? 50 : screenHeight * 0.06,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0A3D62), // Dark navy
-            Color(0xFF60A3D9), // Sky blue
-          ],
+          colors: [Color(0xFF0A3D62), Color(0xFF60A3D9)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0A3D62).withValues(alpha: 0.25),
+            color: const Color(0xFF0A3D62).withOpacity(0.25),
             blurRadius: 12,
-            offset: const Offset(0, 6),
+            offset: Offset(0, 6),
             spreadRadius: 1,
           ),
         ],
       ),
+
       child: Material(
         color: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(10),
           child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isTablet ? 16 : (screenWidth * 0.038).clamp(13, 16),
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
+            child: _isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    text,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isTablet ? 16 : (screenWidth * 0.038).clamp(13, 16),
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
           ),
         ),
       ),

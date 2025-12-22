@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:forsaty/pages/login.dart';
 import 'package:forsaty/pages/signup.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class Splashscreen extends StatelessWidget {
+  const Splashscreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:forsaty/pages/home.dart';
+import 'package:forsaty/pages/splashScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomeScreen(),
+      home: const Splashscreen(),
     );
   }
 }
