@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:forsaty/pages/EditProfileScreen.dart';
+import 'package:forsaty/pages/HomeScreen.dart';
+import 'package:forsaty/pages/JobPostingScreen.dart';
 
 class EmployerProfileScreen extends StatelessWidget {
   const EmployerProfileScreen({super.key});
@@ -39,7 +42,28 @@ class EmployerProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                ElevatedButton(onPressed: () {}, child: const Text("Edit")),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfileScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text("Edit"),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreatePostScreen(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
 
