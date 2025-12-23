@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:forsaty/pages/HomeScreen.dart';
 import 'package:forsaty/pages/forgot_pass.dart';
 import 'package:forsaty/pages/signup.dart';
-import 'package:forsaty/pages/splashScreen.dart';
 import '../../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -58,7 +58,7 @@ class _LoginState extends State<LoginScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Splashscreen()),
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
       }
     }
@@ -86,7 +86,7 @@ class _LoginState extends State<LoginScreen> {
                   Positioned.fill(
                     child: Image.asset(
                       'assets/Subtract.png',
-                      width: double.infinity,
+                      width: screenWidth,
                       fit: BoxFit.fitWidth,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(

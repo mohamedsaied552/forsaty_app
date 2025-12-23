@@ -1,42 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class JobModel {
   final String id;
-  final String employerId;
   final String title;
-  final String description;
+  final String company;
   final String location;
-  final String? photoUrl;
+  final String salary;
+  final String experience;
+  final String category;
   final DateTime createdAt;
 
-  JobModel({
+  const JobModel({
     required this.id,
-    required this.employerId,
     required this.title,
-    required this.description,
+    required this.company,
     required this.location,
-    this.photoUrl,
+    required this.salary,
+    required this.experience,
+    required this.category,
     required this.createdAt,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'employerId': employerId,
-      'title': title,
-      'description': description,
-      'location': location,
-      'photoUrl': photoUrl,
-      'createdAt': createdAt.millisecondsSinceEpoch,
-    };
-  }
-
-  factory JobModel.fromMap(Map<String, dynamic> map, String docId) {
+  factory JobModel.fromDoc(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return JobModel(
-      id: docId,
-      employerId: map['employerId'] ?? '',
-      title: map['title'] ?? '',
-      description: map['description'] ?? '',
-      location: map['location'] ?? '',
-      photoUrl: map['photoUrl'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] ?? 0),
+      id: doc.id,
+      title: (data['title'] ?? '') as String,
+      company: (data['company'] ?? '') as String,
+      location: (data['location'] ?? '') as String,
+      salary: (data['salary'] ?? '') as String,
+      experience: (data['experience'] ?? '') as String,
+      category: (data['category'] ?? 'All') as String,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 }
